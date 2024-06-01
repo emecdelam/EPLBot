@@ -57,7 +57,7 @@ public class EarlyBirdListener extends ListenerAdapter {
         long startSeconds = Config.getGuildVariable(guildId, "EARLY_BIRD_RANGE_START_DAY_SECONDS");
         long endSeconds = Config.getGuildVariable(guildId, "EARLY_BIRD_RANGE_END_DAY_SECONDS");
 
-        long currentSeconds = LocalTime.now().getLong(ChronoField.SECOND_OF_DAY) + 60*60;
+        long currentSeconds = LocalTime.now().getLong(ChronoField.SECOND_OF_DAY);
         long deltaStart = startSeconds - currentSeconds;
         if (deltaStart < 0) {
             deltaStart += 24*60*60;
