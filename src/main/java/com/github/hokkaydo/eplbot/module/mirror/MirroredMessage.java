@@ -6,7 +6,6 @@ import com.github.hokkaydo.eplbot.configuration.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -26,7 +25,6 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.entities.WebhookImpl;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -114,15 +112,17 @@ public class MirroredMessage {
      * */
     private void createAndSendMessage() {
         String content = getContent(originalMessage);
-        // Retrieve author's profile picture or else defaulting on default profile picture
-        Optional.ofNullable(originalMessage.getAuthor().getAvatar()).orElse(Main.getJDA().getSelfUser().getDefaultAvatar()).download().thenApply(is -> {
-            try {
-                return Icon.from(is);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).thenAccept(icon -> originalMessage.getGuild().loadMembers().onSuccess(members -> {
-            WebhookMessageCreateAction<Message> createAction = getWebhook().sendMessage(authorNameAndNickname, icon, content, originalMessage.getAuthor().getIdLong());
+
+        originalMessage.getGuild().loadMembers().onSuccess(members -> {
+
+            String iconUrl = Optional.ofNullable(originalMessage.getAuthor().getAvatar()).orElse(Main.getJDA().getSelfUser().getDefaultAvatar()).getUrl();
+
+            WebhookMessageCreateAction<Message> createAction = getWebhook()
+                                                                       .sendRequest()
+                                                                       .setContent(content)
+                                                                       .setAvatarUrl(iconUrl)
+                                                                       .setUsername(authorNameAndNickname);
+
             if (replyTo != null) {
                 Member replyToAuthor = mirrorMembers.get(replyTo.getAuthor().getIdLong());
                 createAction.addComponents(ActionRow.of(Button.link(replyTo.getJumpUrl(), "↪ %s".formatted(MessageUtil.nameAndNickname(replyToAuthor, replyTo.getAuthor())))));
@@ -165,7 +165,7 @@ public class MirroredMessage {
                                 sendMessage(action.get(), originalMessage);
                             },
                             () -> sendMessage(action.get(), originalMessage));
-        }));
+        });
     }
 
     /**
