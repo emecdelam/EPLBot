@@ -59,7 +59,7 @@ public class EarlyBirdListener extends ListenerAdapter {
 
         long currentSeconds = LocalTime.now().getLong(ChronoField.SECOND_OF_DAY);
         long deltaStart = startSeconds - currentSeconds;
-        if (deltaStart < 0) {
+        if (deltaStart <= 0) {
             deltaStart += 24*60*60;
         }
         Main.LOGGER.log(Level.INFO, "[EarlyBird] Trying to send in {0} seconds", deltaStart);
