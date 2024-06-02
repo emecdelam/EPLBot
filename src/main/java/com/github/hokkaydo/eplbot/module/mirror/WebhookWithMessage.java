@@ -36,6 +36,7 @@ public class WebhookWithMessage {
         Function<DataObject, Message> transform = json -> createMessage((JDAImpl) webhook.getJDA(), json);
         route = route.withQueryParams("wait", "true");
         WebhookMessageCreateActionImpl<Message> action = new WebhookMessageCreateActionImpl<>(webhook.getJDA(), route, transform);
+        action.setInteraction(false);
         action.run();
         return action;
     }
