@@ -27,7 +27,7 @@ public class WebhookWithMessage {
         this.threadId = threadId;
     }
 
-    public WebhookMessageCreateAction<Message> sendRequest() {
+    public WebhookMessageCreateActionImpl<Message> sendRequest() {
         checkToken();
         Route.CompiledRoute route = Route.Webhooks.EXECUTE_WEBHOOK.compile(webhook.getId(), webhook.getToken());
         if(this.threadWebhook)
@@ -36,8 +36,8 @@ public class WebhookWithMessage {
         Function<DataObject, Message> transform = json -> createMessage((JDAImpl) webhook.getJDA(), json);
         route = route.withQueryParams("wait", "true");
         WebhookMessageCreateActionImpl<Message> action = new WebhookMessageCreateActionImpl<>(webhook.getJDA(), route, transform);
-        action.setInteraction(false);
         action.run();
+        action.setInteraction(false);
         return action;
     }
 
