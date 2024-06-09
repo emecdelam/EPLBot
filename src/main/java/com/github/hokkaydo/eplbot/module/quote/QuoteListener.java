@@ -129,7 +129,7 @@ public class QuoteListener extends ListenerAdapter {
                 quote -> {
                     List<Message> messages = quotesOfMessage.getOrDefault(quoter.getIdLong(), new ArrayList<>());
                     messages.add(quote);
-                    quotesOfMessage.put(quote.getIdLong(), messages);
+                    quotesOfMessage.put(quoter.getIdLong(), messages);
                     // Add 🗑 emote to delete quote if reacted with
                     quote.editMessageComponents(ActionRow.of(Button.primary("delete-quote", Emoji.fromUnicode("\uD83D\uDDD1")))).queue();
                     quotes.put(quote.getIdLong(), new Quote(quote, quoter.getAuthor().getIdLong(), quoted.getAuthor().getIdLong()));
