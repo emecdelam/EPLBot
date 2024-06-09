@@ -65,7 +65,13 @@ public class ConfessionProcessor extends ListenerAdapter {
     }
 
     void process(CommandContext context, boolean following) {
-        TextChannel validationChannel = Main.getJDA().getChannelById(TextChannel.class, Config.getGuildVariable(guildId, "CONFESSION_VALIDATION_CHANNEL_ID"));
+        String confessionValidationChannelId = Config.getGuildVariable(guildId, "CONFESSION_VALIDATION_CHANNEL_ID");
+        if(confessionValidationChannelId.isBlank()) {
+            MessageUtil.sendAdminMessage(Strings.getString("WARNING_CONFESSION_VALIDATION_CHANNEL_ID_INVALID"), guildId);
+            context.replyCallbackAction().setContent(Strings.getString("ERROR_OCCURRED")).queue();
+            return;
+        }
+        TextChannel validationChannel = Main.getJDA().getChannelById(TextChannel.class, confessionValidationChannelId);
         if(validationChannel == null) {
             MessageUtil.sendAdminMessage(Strings.getString("WARNING_CONFESSION_VALIDATION_CHANNEL_ID_INVALID"), guildId);
             context.replyCallbackAction().setContent(Strings.getString("ERROR_OCCURRED")).queue();
@@ -108,7 +114,14 @@ public class ConfessionProcessor extends ListenerAdapter {
         MessageCreateBuilder confession = confessions.get(uuid);
         confessions.remove(uuid);
         if(confession == null) return;
-        TextChannel confessionChannel = Main.getJDA().getChannelById(TextChannel.class, Config.getGuildVariable(guildId,"CONFESSION_CHANNEL_ID"));
+
+        String confessionChannelId = Config.getGuildVariable(guildId, "CONFESSION_CHANNEL_ID");
+        if(confessionChannelId.isBlank()) {
+            MessageUtil.sendAdminMessage(Strings.getString("WARNING_CONFESSION_CHANNEL_ID_INVALID"), guildId);
+            return;
+        }
+
+        TextChannel confessionChannel = Main.getJDA().getChannelById(TextChannel.class, confessionChannelId);
         if(confessionChannel == null) {
             MessageUtil.sendAdminMessage(Strings.getString("WARNING_CONFESSION_CHANNEL_ID_INVALID"), guildId);
             return;
@@ -174,14 +187,15 @@ public class ConfessionProcessor extends ListenerAdapter {
             MessageUtil.sendAdminMessage(Strings.getString("WARNING_CONFESSION_VALIDATION_CHANNEL_ID_INVALID"), guildId);
             return;
         }
-        Member user = guild.getMemberById(confessionAuthorId);
+        Member member = guild.getMemberById(confessionAuthorId);
+        String username = Optional.ofNullable(Main.getJDA().getUserById(confessionAuthorId)).map(User::getName).orElse(STR."USER NOT ON SERVER : \{confessionAuthorId}");
         EmbedBuilder builder = new EmbedBuilder()
                                        .setDescription(Strings.getString("CONFESSION_TOO_MUCH_WARNS")
                                                                .formatted(
-                                                                       user == null ? "USER NOT ON SERVER" : user.getAsMention(),
+                                                                       member == null ? username : member.getAsMention(),
                                                                        threshold,
                                                                        threshold,
-                                                                       user == null ? "USER NOT ON SERVER" : STR."@\{user.getNickname()}"
+                                                                       member == null ? STR."@\{username}" : STR."@\{member.getEffectiveName()}"
                                                                )
                                        )
                                        .setColor(Color.ORANGE);
@@ -193,7 +207,7 @@ public class ConfessionProcessor extends ListenerAdapter {
                                               .setDescription(confession.messageContent())
                                               .setColor(Color.BLACK)
                                               .setTimestamp(confession.timestamp().toInstant())
-                                              .setAuthor(user == null ? String.valueOf(confessionAuthorId) : user.getUser().getName());
+                                              .setAuthor(member == null ? String.valueOf(confessionAuthorId) : member.getUser().getName());
                 m.replyEmbeds(warned.build()).queue();
             }
         });

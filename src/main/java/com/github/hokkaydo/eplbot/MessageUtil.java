@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -62,7 +63,7 @@ public class MessageUtil {
         String adminChannelId = Config.getGuildVariable(guildId, "ADMIN_CHANNEL_ID");
         TextChannel adminChannel;
         if(adminChannelId.isBlank() || (adminChannel = Main.getJDA().getChannelById(TextChannel.class, adminChannelId)) == null) {
-            Main.LOGGER.log(Level.WARNING, "Invalid admin channel");
+            Main.LOGGER.log(Level.WARNING, STR."Invalid admin channel : \{Objects.requireNonNull(Main.getJDA().getGuildById(guildId)).getName()}");
             return;
         }
         adminChannel.sendMessage(message).queue();
