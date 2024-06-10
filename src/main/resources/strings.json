@@ -122,5 +122,15 @@
   "BOOKMARK_COMMAND_DESCRIPTION": "Permet de consulter vos signets en message privés",
   "BOOKMARK_COMMAND_HELP": "Permet de consulter vos signets en messages privés",
   "BOOKMARK_EMPTY": "Vous n'avez enregistré aucun signet.",
-  "CHECK_YOUR_DMS": "Veuillez consulter vos messages privés"
+  "CHECK_YOUR_DMS": "Veuillez consulter vos messages privés",
+  "SAY_COMMAND_GUILD_ONLY": "Cette commande ne peut être utilisée que dans un serveur",
+  "SAY_COMMAND_NOT_TEXT_CHANNEL": "Le canal spécifié n'est pas un canal textuel",
+  "SAY_COMMAND_MESSAGE_NOT_FOUND": "Message introuvable",
+  "SAY_COMMAND_SUCCESS": "Message envoyé",
+  "SAY_COMMAND_SPECIFY_CHANNEL": "Veuillez spécifier un canal lorsque vous envoyez une réponse",
+  "SAY_COMMAND_DESCRIPTION": "Permet d'envoyer un message dans un canal spécifique",
+  "SAY_COMMAND_OPTION_MESSAGE_DESCRIPTION": "Message à envoyer",
+  "SAY_COMMAND_OPTION_CHANNEL_DESCRIPTION": "Canal dans lequel envoyer le message",
+  "SAY_COMMAND_OPTION_REPLY_TO_DESCRIPTION": "Message auquel répondre",
+  "SAY_COMMAND_HELP": "Permet d'envoyer un message dans un canal spécifique. \n- `/say <message>` pour envoyer un message dans le canal actuel\n- `/say <channel> <message>` pour envoyer un message dans un canal spécifique\n- `/say <message> <channel> <reply-to-message-id>` pour répondre à un message"
 }
