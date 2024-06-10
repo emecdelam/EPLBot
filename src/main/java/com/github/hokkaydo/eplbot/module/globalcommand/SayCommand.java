@@ -4,7 +4,6 @@ import com.github.hokkaydo.eplbot.Strings;
 import com.github.hokkaydo.eplbot.command.Command;
 import com.github.hokkaydo.eplbot.command.CommandContext;
 import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -27,33 +26,27 @@ public class SayCommand implements Command {
             context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_GUILD_ONLY")).queue();
             return;
         }
+        channel = channel == null ? context.channel() : channel;
 
-        if (channel == null) {
-            if(!replyTo.isBlank()) {
-                context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SPECIFY_CHANNEL")).queue();
-                return;
-            }
-            context.channel().sendMessage(message).queue();
-            context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SUCCESS")).queue();
-        } else {
-            if (!(channel instanceof TextChannel textChannel)) {
-                context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_NOT_TEXT_CHANNEL")).queue();
-                return;
-            }
-            if (!replyTo.isBlank()) {
-                if (replyTo.length() > 20 || !Helpers.isNumeric(replyTo)) {
-                    context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_MESSAGE_NOT_FOUND")).queue();
-                    return;
-                }
-                textChannel.retrieveMessageById(replyTo).queue(msg -> {
-                    msg.reply(message).queue();
-                    context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SUCCESS")).queue();
-                }, ignored -> context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_MESSAGE_NOT_FOUND")).queue());
-            } else {
-                textChannel.sendMessage(message).queue();
-                context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SUCCESS")).queue();
-            }
+        if (!(channel instanceof MessageChannel textChannel)) {
+            context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_NOT_TEXT_CHANNEL")).queue();
+            return;
         }
+
+        if (!replyTo.isBlank()) {
+            if (replyTo.length() > 20 || !Helpers.isNumeric(replyTo)) {
+                context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_MESSAGE_NOT_FOUND")).queue();
+                return;
+            }
+            textChannel.retrieveMessageById(replyTo).queue(msg -> {
+                msg.reply(message).queue();
+                context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SUCCESS")).queue();
+            }, ignored -> context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_MESSAGE_NOT_FOUND")).queue());
+        } else {
+            textChannel.sendMessage(message).queue();
+            context.replyCallbackAction().setEphemeral(true).setContent(Strings.getString("SAY_COMMAND_SUCCESS")).queue();
+        }
+
     }
 
     @Override
