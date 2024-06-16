@@ -82,7 +82,7 @@ public class EarlyBirdListener extends ListenerAdapter {
                                   .ifPresentOrElse(channel -> {
                                               String nextMessage = Config.getGuildState(guildId, "EARLY_BIRD_NEXT_MESSAGE");
                                               if(nextMessage != null && !nextMessage.isBlank()) {
-                                                  channel.sendMessage(nextMessage).queue();
+                                                  channel.sendMessage(nextMessage).setAllowedMentions(null).queue();
                                                   Config.updateValue(guildId, "EARLY_BIRD_NEXT_MESSAGE", "");
                                                   this.waitingForAnswer = true;
                                                   perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
@@ -91,7 +91,7 @@ public class EarlyBirdListener extends ListenerAdapter {
                                                   return;
                                               }
                                               int randomMessageIndex = RANDOM.nextInt(MESSAGES.size());
-                                              channel.sendMessage(MESSAGES.get(randomMessageIndex)).queue(_ -> this.waitingForAnswer = true);
+                                              channel.sendMessage(MESSAGES.get(randomMessageIndex)).queue(ignored -> this.waitingForAnswer = true);
                                               perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
                                               dayLoops.removeIf(f -> f.isDone() || f.isCancelled());
                                               launchRandomSender();
