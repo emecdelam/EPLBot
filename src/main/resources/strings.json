@@ -40,7 +40,7 @@
   "COMMAND_MIRROR_INVALID_CHANNEL": "Identifiant de canal %s invalide.",
   "COMMAND_MIRRORLIST_NO_MIRROR": "Aucun lien trouvé pour le canal %s",
   "COMMAND_MIRRORLINK_LINK_EXISTS": "Un lien existe déjà entre %s et %s.",
-  "ERROR_OCCURRED": "Une erreur est survenue.",
+  "ERROR_OCCURRED": "Une erreur est survenue. Veuillez le signaler à un modérateur.",
   "WARNING_CONFESSION_VALIDATION_CHANNEL_ID_INVALID": ":warning: L'identifiant du canal de validation de confession est invalide",
   "COMMAND_CONFESSION_SUBMITTED": "La confession a bien été envoyée",
   "WARNING_CONFESSION_CHANNEL_ID_INVALID": ":warning: L'identifiant du canal d'envoi de confession est invalide",
@@ -131,5 +131,8 @@
   "SAY_COMMAND_OPTION_MESSAGE_DESCRIPTION": "Message à envoyer",
   "SAY_COMMAND_OPTION_CHANNEL_DESCRIPTION": "Canal dans lequel envoyer le message",
   "SAY_COMMAND_OPTION_REPLY_TO_DESCRIPTION": "Message auquel répondre",
-  "SAY_COMMAND_HELP": "Permet d'envoyer un message dans un canal spécifique. \n- `/say <message>` pour envoyer un message dans le canal actuel\n- `/say <channel> <message>` pour envoyer un message dans un canal spécifique\n- `/say <message> <channel> <reply-to-message-id>` pour répondre à un message"
+  "SAY_COMMAND_HELP": "Permet d'envoyer un message dans un canal spécifique. \n- `/say <message>` pour envoyer un message dans le canal actuel\n- `/say <channel> <message>` pour envoyer un message dans un canal spécifique\n- `/say <message> <channel> <reply-to-message-id>` pour répondre à un message",
+  "MENU_COMMAND_DESCRIPTION": "Permet de voir le menu du restaurant universitaire \"Le Galilée\"",
+  "MENU_COMMAND_HELP": "Permet de voir le menu du restaurant universitaire \"Le Galilée\"",
+  "MENU_COMMAND_NOT_FOUND": "Menu introuvable"
 }
