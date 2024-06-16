@@ -43,7 +43,7 @@ public class QuoteListener extends ListenerAdapter {
     private final Map<Long, List<Message>> quotesOfMessage = new HashMap<>();
     // key: quote id, value: Quote
     private final Map<Long, Quote> quotes = new HashMap<>();
-    private final static ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
     private final Map<Long, ScheduledFuture<?>> removeDeleteButtonTasks = new HashMap<>();
     // indicates if the map of quotes is up to date or waiting for a quote to be sent
     // (> 0 means the map is not up to date)
@@ -57,7 +57,7 @@ public class QuoteListener extends ListenerAdapter {
         String modRoleId = Config.getGuildVariable(guildId,"MODERATOR_ROLE_ID");
         Role modRole = modRoleId.isBlank() ? null : Main.getJDA().getRoleById(Config.getGuildVariable(guildId,"MODERATOR_ROLE_ID"));
         if(modRole == null)
-            MessageUtil.sendAdminMessage("Moderator role ID of %s is no set!".formatted(event.getGuild().getName()), guildId);
+            MessageUtil.sendAdminMessage("Moderator role ID of %s is no set! Please consider setting it up using `/config MODERATION_ROLE_ID <role_id>".formatted(event.getGuild().getName()), guildId);
         boolean mod = event.getMember().getRoles().stream().max(Comparator.comparing(Role::getPosition)).map(role -> modRole != null && role.getPosition() >= modRole.getPosition()).orElse(false);
         if(!mod && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE) &&  (!quotes.containsKey(event.getMessageIdLong()) || !quotes.get(event.getMessageIdLong()).allowedToDeleteUserIds().contains(event.getUser().getIdLong()))) {
             event.getInteraction().deferReply(true).setContent(Strings.getString("QUOTE_DELETE_NOT_ALLOWED")).queue();
@@ -152,10 +152,10 @@ public class QuoteListener extends ListenerAdapter {
             // Deleting an already deleted message could throw an Exception
             quotesOfMessage.get(event.getMessageIdLong())
                     .stream()
-                    .map(Message::delete).map(a -> a.onErrorMap(_ -> null))
+                    .map(Message::delete).map(a -> a.onErrorMap(ignored -> null))
                     .forEach(a -> {
                         try {
-                            a.onErrorMap(_ -> null).queue();
+                            a.onErrorMap(ignored -> null).queue();
                         }catch (Exception ignored) { /*Ignored*/}
                     });
             quotesOfMessage.remove(event.getMessageIdLong());
