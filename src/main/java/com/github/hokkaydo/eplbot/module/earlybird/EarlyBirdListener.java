@@ -3,6 +3,7 @@ package com.github.hokkaydo.eplbot.module.earlybird;
 import com.github.hokkaydo.eplbot.Main;
 import com.github.hokkaydo.eplbot.MessageUtil;
 import com.github.hokkaydo.eplbot.configuration.Config;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -79,29 +80,32 @@ public class EarlyBirdListener extends ListenerAdapter {
             perfectTimeLoops.add(EXECUTOR.schedule(
                     () -> Optional.ofNullable(Main.getJDA().getGuildById(guildId))
                                   .map(guild -> guild.getTextChannelById(Config.getGuildVariable(guildId, "EARLY_BIRD_CHANNEL_ID")))
-                                  .ifPresentOrElse(channel -> {
-                                              String nextMessage = Config.getGuildState(guildId, "EARLY_BIRD_NEXT_MESSAGE");
-                                              if(nextMessage != null && !nextMessage.isBlank()) {
-                                                  channel.sendMessage(nextMessage).setAllowedMentions(null).queue();
-                                                  Config.updateValue(guildId, "EARLY_BIRD_NEXT_MESSAGE", "");
-                                                  this.waitingForAnswer = true;
-                                                  perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
-                                                  dayLoops.removeIf(f -> f.isDone() || f.isCancelled());
-                                                  launchRandomSender();
-                                                  return;
-                                              }
-                                              int randomMessageIndex = RANDOM.nextInt(MESSAGES.size());
-                                              channel.sendMessage(MESSAGES.get(randomMessageIndex)).queue(ignored -> this.waitingForAnswer = true);
-                                              perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
-                                              dayLoops.removeIf(f -> f.isDone() || f.isCancelled());
-                                              launchRandomSender();
-                                          },
+                                  .ifPresentOrElse(
+                                          this::sendMessage,
                                           () -> MessageUtil.sendAdminMessage("EARLY_BIRD_CHANNEL_ID (%s) not found".formatted(Config.getGuildVariable(guildId, "EARLY_BIRD_CHANNEL_ID")), guildId)
                                   ),
                     waitTime,
                     TimeUnit.SECONDS
             ));
         }, deltaStart, TimeUnit.SECONDS));
+    }
+
+    private void sendMessage(TextChannel channel) {
+        String nextMessage = Config.getGuildState(guildId, "EARLY_BIRD_NEXT_MESSAGE");
+        if(nextMessage != null && !nextMessage.isBlank()) {
+            channel.sendMessage(nextMessage).setAllowedMentions(null).queue();
+            Config.updateValue(guildId, "EARLY_BIRD_NEXT_MESSAGE", "");
+            this.waitingForAnswer = true;
+            perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
+            dayLoops.removeIf(f -> f.isDone() || f.isCancelled());
+            launchRandomSender();
+            return;
+        }
+        int randomMessageIndex = RANDOM.nextInt(MESSAGES.size());
+        channel.sendMessage(MESSAGES.get(randomMessageIndex)).queue(ignored -> this.waitingForAnswer = true);
+        perfectTimeLoops.removeIf(f -> f.isDone() || f.isCancelled());
+        dayLoops.removeIf(f -> f.isDone() || f.isCancelled());
+        launchRandomSender();
     }
 
     public void cancel() {
