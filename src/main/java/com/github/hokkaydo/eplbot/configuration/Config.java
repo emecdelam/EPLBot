@@ -66,7 +66,8 @@ public class Config {
             "CONFESSION_CHANNEL_ID", STRING_CONFIGURATION_VALUE.get(),
             "CONFESSION_VALIDATION_CHANNEL_ID", STRING_CONFIGURATION_VALUE.get(),
             "CONFESSION_EMBED_COLOR", COLOR_CONFIGURATION_VALUE.apply(Color.decode("#3498DB")),
-            "DRIVE_ADMIN_CHANNEL_ID", STRING_CONFIGURATION_VALUE.get()
+            "DRIVE_ADMIN_CHANNEL_ID", STRING_CONFIGURATION_VALUE.get(),
+            "COMMAND_CODE_TIMELIMIT", INTEGER_CONFIGURATION_VALUE.apply(30)
     ));
 
     public static Map<String, ConfigurationParser> getDefaultConfiguration() {
@@ -127,6 +128,9 @@ public class Config {
                 "christmas", MODULE_DISABLED.get(),
                 "bookmark", MODULE_DISABLED.get()
         ));
+        DEFAULT_CONFIGURATION.put(
+                "code", new ConfigurationParser(() -> true, Object::toString, Boolean::valueOf, "Booléen")
+        );
     }
     private static final Map<Long, Map<String, Object>> GUILD_CONFIGURATION = new HashMap<>();
     private static final Map<Long, Map<String, Object>> GUILD_STATE = new HashMap<>();
