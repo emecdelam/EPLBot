@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -77,18 +78,21 @@ public class CodeCommand extends ListenerAdapter implements Command {
 
     @Override
     public void executeCommand(CommandContext context) {
-
-        if (context.options().size() <= 1) {
+        if (context.options().size() <= 1 || (context.options().size() == 2 && context.options().get(1).getType() != OptionType.ATTACHMENT)) {
             // No file given
             String currentLang = context.options().getFirst().getAsString();
-            context.interaction().replyModal(Modal.create(STR."\{context.author().getId()}-code_submission-\{currentLang}","Execute du code")
+            String modalName = STR."\{context.author().getId()}-code_submission-\{currentLang}";
+            if (context.options().size() == 2){
+                modalName += "-spoiler";
+            }
+            context.interaction().replyModal(Modal.create(modalName,"Execute du code")
                                                      .addActionRow(TextInput.create("body", "Code", TextInputStyle.PARAGRAPH).setPlaceholder("Code").setRequired(true).build())
                                                      .build()).queue();
             return;
         }
-        context.replyCallbackAction().setContent(STR."Processing since: <t:\{Instant.now().getEpochSecond()}:R>").setEphemeral(false).queue();
-        context.options()
-            .get(1)
+        long current = Instant.now().toEpochMilli();
+        context.replyCallbackAction().setContent(STR."Processing since: <t:\{current/ 1000}:R>").setEphemeral(false).queue( reply -> context.options()
+            .get(2)
             .getAsAttachment()
             .getProxy()
             .downloadToFile(new File((INPUT_FILENAME)))
@@ -102,13 +106,16 @@ public class CodeCommand extends ListenerAdapter implements Command {
                         "COMMAND_CODE_TIMELIMIT"
                     ))
                 );
+                boolean hasSpoiler = context.options().get(1).getAsBoolean();
 
                 futureResult.thenAccept(result -> {
-                    response.sendSubmittedCode(context.channel(), code, context.options().getFirst().getAsString());
-                    response.sendResult(context.channel(), result.getLeft(), result.getRight());
+                    response.sendSubmittedCode(context.channel(), spoilMessage(code, hasSpoiler), context.options().getFirst().getAsString());
+                    response.sendResult(context.channel(), spoilMessage(result.getLeft(),hasSpoiler), result.getRight());
                     if (file != null && !file.delete()) {
                         Main.LOGGER.log(Level.INFO, "File not deleted");
                     }
+                    long sent = Instant.now().toEpochMilli();
+                    reply.editOriginal(STR."Processing time: `\{(sent-current)} ms`").queue();
                 });
             })
             .exceptionally(t -> {
@@ -116,8 +123,8 @@ public class CodeCommand extends ListenerAdapter implements Command {
                     \{Strings.getString("COMMAND_CODE_UNEXPECTED_ERROR")}
                     The error is :\{t.getMessage()}""").queue();
                 return null;
-            });
-
+            })
+        );
     }
 
     /**
@@ -134,6 +141,19 @@ public class CodeCommand extends ListenerAdapter implements Command {
         }
     }
 
+    /**
+     * @param text the string to be formatted to spoiler
+     * @param isSpoiler a boolean descibing the need for format
+     * @return the text + || twice
+     */
+    private String spoilMessage(String text, boolean isSpoiler) {
+        if (isSpoiler) {
+            return STR."||\{text}||";
+        } else {
+            return text;
+        }
+    }
+
     @Override
     public void onModalInteraction(ModalInteractionEvent event) {
         // Check for a valid modal
@@ -146,20 +166,25 @@ public class CodeCommand extends ListenerAdapter implements Command {
             return;
         }
         Integer runTimeout = Config.getGuildVariable(guild.getIdLong(), "COMMAND_CODE_TIMELIMIT");
-        event.getInteraction().reply(STR."Processing since: <t:\{Instant.now().getEpochSecond()}:R>").queue();
-        String languageOption = event.getModalId().split("-")[2];
-        String code = Objects.requireNonNull(body.get().getAsString());
-        Runner runner = instantiateRunner(languageOption);
-        CompletableFuture<Pair<String, Integer>> futureResult = CompletableFuture.supplyAsync(() ->
-            runner.run(code, runTimeout)
-        );
-        futureResult.thenAccept(result -> {
-            response.sendSubmittedCode(event.getChannel(),code,languageOption);
-            response.sendResult(event.getChannel(), result.getLeft(),result.getRight());
+        long current = Instant.now().toEpochMilli();
+        event.getInteraction().reply(STR."Processing since: <t:\{current/ 1000}:R>").queue(reply -> {
+            String languageOption = event.getModalId().split("-")[2];
+
+            String code = Objects.requireNonNull(body.get().getAsString());
+            Runner runner = instantiateRunner(languageOption);
+            CompletableFuture<Pair<String, Integer>> futureResult = CompletableFuture.supplyAsync(() ->
+                runner.run(code, runTimeout)
+            );
+            futureResult.thenAccept(result -> {
+                boolean hasSpoiler = event.getModalId().contains("spoiler");
+                response.sendSubmittedCode(event.getChannel(),spoilMessage(code, hasSpoiler),languageOption);
+                response.sendResult(event.getChannel(), spoilMessage(result.getLeft(),hasSpoiler),result.getRight());
+                long sent = Instant.now().toEpochMilli();
+                reply.editOriginal(STR."Processing time: `\{(sent-current)} ms`").queue();
+            });
         });
-
-
     }
+
 
     @Override
     public String getName() {
@@ -179,8 +204,8 @@ public class CodeCommand extends ListenerAdapter implements Command {
         }
         return List.of(
             codeOptions,
+            new OptionData(OptionType.BOOLEAN, "spoiler", Strings.getString("COMMAND_CODE_SPOILER_OPTION_DESCRIPTION"), true),
             new OptionData(OptionType.ATTACHMENT, "file", Strings.getString("COMMAND_CODE_FILE_OPTION_DESCRIPTION"), false)
-
         );
     }
 
