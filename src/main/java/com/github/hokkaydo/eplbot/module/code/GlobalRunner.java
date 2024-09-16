@@ -66,7 +66,17 @@ public class GlobalRunner implements Runner{
 
     private Process startProcessInDocker(String code) throws IOException {
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "docker", "run", "--rm", "-v", "/tmp/logs:/usr/src/app/logs","--name", dockerName, targetDocker, code);
+            "docker", "run", "--rm",
+            "-v", "/tmp/logs:/usr/src/app/logs",
+            "--name", dockerName,
+            "--memory", "512m",           // 512 Mo
+            "--cpus", "1",                // 1 cpu
+            "--pids-limit", "4",        // max 4 processes
+            "--cap-drop=ALL",             // no more linux cmd like mount
+            "--network", "none",          // no network
+            targetDocker,
+            code
+        );
         processBuilder.redirectErrorStream(true);
         return processBuilder.start();
     }
