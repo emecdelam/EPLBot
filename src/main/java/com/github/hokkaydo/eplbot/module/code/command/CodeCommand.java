@@ -78,7 +78,8 @@ public class CodeCommand extends ListenerAdapter implements Command {
 
     @Override
     public void executeCommand(CommandContext context) {
-        if (context.options().size() <= 1) {
+        System.out.println(context.options().size());
+        if (context.options().size() <= 2) {
             // No file given
             String currentLang = context.options().getFirst().getAsString();
             String modalName = STR."\{context.author().getId()}-code_submission-\{currentLang}";
